@@ -311,7 +311,7 @@ def computed_height(source_image, width, actual_width, actual_height):
     return int(float(actual_height) * (float(width) / float(actual_width)))
 
 
-def process_image(ctx, source_image, dst_filename, width, height=None):
+def process_image(ctx, source_image, dst_filename, width, height=None, extra_args = []):
     """Build image from source image, optionally compressing and resizing.
 
     "source_image" is the absolute path of the source in the content directory,
@@ -327,13 +327,13 @@ def process_image(ctx, source_image, dst_filename, width, height=None):
         resize_key += 'x' + str(height)
 
     cmdline = [im, source_image, '-resize', resize_key, '-auto-orient',
-               '-quality', str(quality), dst_filename]
+               '-quality', str(quality)] + extra_args + [dst_filename]
 
     reporter.report_debug_info('imagemagick cmd line', cmdline)
     portable_popen(cmdline).wait()
 
 
-def make_thumbnail(ctx, source_image, source_url_path, width, height=None):
+def make_thumbnail(ctx, source_image, source_url_path, width, height=None, extra_args = []):
     """Helper method that can create thumbnails from within the build process
     of an artifact.
     """
@@ -349,7 +349,7 @@ def make_thumbnail(ctx, source_image, source_url_path, width, height=None):
     @ctx.sub_artifact(artifact_name=dst_url_path, sources=[source_image])
     def build_thumbnail_artifact(artifact):
         artifact.ensure_dir()
-        process_image(ctx, source_image, artifact.dst_filename, width, height)
+        process_image(ctx, source_image, artifact.dst_filename, width, height, extra_args)
 
     return Thumbnail(dst_url_path, width, height)
 
